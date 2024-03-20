@@ -16,7 +16,7 @@ resource "azurerm_subscription" "hub" {
 
 resource "azurerm_management_group_subscription_association" "hub" {
   management_group_id = data.azurerm_management_group.hub.id
-  subscription_id     = azurerm_subscription.hub.id
+  subscription_id     = azurerm_subscription.hub.subscription_id
 }
 
 resource "azurerm_resource_group" "hub" {
