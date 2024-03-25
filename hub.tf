@@ -1,24 +1,3 @@
-data "azurerm_management_group" "hub" {
-  name = "es-connectivity"
-}
-
-data "azurerm_billing_mca_account_scope" "hub" {
-  billing_account_name = "c3e4d4fd-a248-5faf-65ad-faca35ed9980:cb1a0f0b-ef62-4e9c-ac1d-6b1159aadeec_2019-05-31"
-  billing_profile_name = "5MI2-CB77-BG7-PGB"
-  invoice_section_name = "TPUJ-JTMZ-PJA-PGB"
-}
-
-resource "azurerm_subscription" "hub" {
-  subscription_name = "Hub Subscription 2"
-  billing_scope_id  = data.azurerm_billing_mca_account_scope.hub.id
-}
-
-
-resource "azurerm_management_group_subscription_association" "hub" {
-  management_group_id = data.azurerm_management_group.hub.id
-  subscription_id     = "/subscriptions/${resource.azurerm_subscription.hub.subscription_id}"
-}
-
 resource "azurerm_resource_group" "hub" {
   name     = "hub-resources"
   location = var.default_location
