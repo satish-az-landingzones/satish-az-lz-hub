@@ -14,3 +14,5 @@ variable "default_location" {
   type    = string
   default = "eastus"
 }
+
+variable "github_token" {}
