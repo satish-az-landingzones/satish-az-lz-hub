@@ -1,0 +1,195 @@
+name: 'Terraform'
+on:
+  push:
+  pull_request:
+
+permissions:
+  id-token: write
+  contents: write
+  issues: write
+  pull-requests: write
+
+
+
+jobs:
+  terraform-plan:
+    name: 'Terraform Plan'
+    runs-on: ubuntu-latest
+    environment: ${{ matrix.environment }}
+    strategy:
+      max-parallel: 1
+      fail-fast: true
+      matrix:
+        environment:
+           - Production
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+
+        - name: Azure Login
+          uses: azure/login@v1
+          with:
+            client-id: ${{ secrets.ARM_CLIENT_ID }}
+            tenant-id: ${{ secrets.ARM_TENANT_ID }}
+            subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+   
+        - name: Setup Terraform
+          uses: hashicorp/setup-terraform@v2
+          with:
+            terraform_version: '1.7.3'
+            cli_config_credentials_token: ${{ secrets.TF_API_TOKEN  }}
+
+        - name: Terraform version
+          id: version
+          shell: bash
+          run: terraform version
+          # # working-directory: terraform
+
+        - name: Terraform Init
+          shell: bash
+          run:
+            terraform init -no-color
+          env:
+            TFE_TOKEN: ${{ secrets.TF_API_TOKEN }}
+          # # working-directory: terraform
+
+        # - name: Terraform Validate
+        #   id: validate
+        #   shell: bash
+        #   run: terraform validate -no-color --var-file="./environments/${{ matrix.environment }}.tfvars"
+        #   # working-directory: terraform
+
+        - name: Terraform Plan
+          id: plan
+          run: |
+            set -o pipefail; terraform plan --var-file="./environments/${{ matrix.environment }}.tfvars" \
+            -var="github_token=${{ secrets.GITHUB_TOKEN}}" \
+            -out="${{ matrix.environment }}.plan" \
+          continue-on-error: false
+          # working-directory: terraform
+            
+        - name: Terraform Plan Status
+          if: steps.plan.outcome == 'failure'
+          run: exit 1
+
+        - uses: actions/github-script@v6
+          if: github.event_name == 'pull_request' && matrix.environment == 'Production'
+          env:
+            PLAN: "${{ steps.plan.outputs.stdout }}"
+          with:
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+            script: |
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+              })
+              const botComment = comments.find(comment => {
+                return comment.user.type === 'Bot' && comment.body.includes('Plan status')
+              })
+
+              const output = `Plan status: \`${{ steps.plan.outcome }}\`
+              <details>
+
+              \`\`\`\n
+              ${process.env.PLAN}
+              \`\`\`
+
+              </details>
+
+              *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+              // 3. If we have a comment, update it, otherwise create a new one
+              if (botComment) {
+                github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: botComment.id,
+                  body: output
+                })
+              } else {
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: output
+                })
+              }
+
+        - name: Create a release
+          if: github.actor != 'dependabot[bot]' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+          uses: softprops/action-gh-release@v0.1.14
+          with:
+            tag_name: v${{ needs.build-and-test.outputs.version }}
+            generate_release_notes: true
+
+        - name: Upload Artifact
+          uses: actions/upload-artifact@v3.1.2
+          with:
+            name: ${{ matrix.environment }}.plan
+            path: ${{ matrix.environment }}.plan
+            retention-days: 30
+
+
+  terraform-apply:
+    if: github.actor != 'dependabot[bot]' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    name: 'Terraform Apply'
+    runs-on: ubuntu-latest
+    needs: terraform-plan
+    environment: ${{ matrix.environment }}
+    strategy:
+      max-parallel: 1
+      fail-fast: true
+      matrix:
+        environment:
+           - Production
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+
+        - name: Azure Login
+          uses: azure/login@v1
+          with:
+            client-id: ${{ secrets.ARM_CLIENT_ID }}
+            tenant-id: ${{ secrets.ARM_TENANT_ID }}
+            subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+   
+        - name: Setup Terraform
+          uses: hashicorp/setup-terraform@v2
+          with:
+            terraform_version: '1.7.3'
+            cli_config_credentials_token: ${{ secrets.TF_API_TOKEN  }}
+
+        - name: Terraform version
+          id: version-tf-apply
+          shell: bash
+          run: terraform version
+          # # working-directory: terraform
+
+        - name: Terraform Init
+          shell: bash
+          run:
+            terraform init -no-color
+          env:
+            TFE_TOKEN: ${{ secrets.TF_API_TOKEN }}
+          # # working-directory: terraform
+
+        - uses: actions/download-artifact@v3
+          with:
+            name: ${{ matrix.environment }}.plan
+            # path: ./
+
+        - name: Terraform Apply
+          id: apply
+          run: |
+            terraform apply ${{ matrix.environment }}.plan
+          continue-on-error: false
+          # working-directory: terraform
