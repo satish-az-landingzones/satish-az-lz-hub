@@ -16,4 +16,5 @@ resource "azurerm_virtual_network_peering" "spoke_to_hub" {
   resource_group_name       = "spoke-resources"
   virtual_network_name      = data.azurerm_virtual_network.spoke.name
   remote_virtual_network_id = azurerm_virtual_network.hub.id
+  provider                  = azurerm.spoke
 }
