@@ -57,16 +57,16 @@ resource "azurerm_subnet_network_security_group_association" "subnet" {
   subnet_id                 = data.azurerm_subnet.bastion_subnet.id
   network_security_group_id = azurerm_network_security_group.bastion.id
 
-  depends_on = [azurerm_network_security_rule.allow_https_inbound,
-    azurerm_network_security_rule.allow_gateway_manager_inbound,
-    azurerm_network_security_rule.allow_sshrdp_outbound,
-  azurerm_network_security_rule.allow_azurecloud_outbound]
+  depends_on = [azurerm_network_security_rule.allow_https_Inbound,
+    azurerm_network_security_rule.allow_gateway_manager_Inbound,
+    azurerm_network_security_rule.allow_sshrdp_Outbound,
+  azurerm_network_security_rule.allow_azurecloud_Outbound]
 }
 
-resource "azurerm_network_security_rule" "allow_https_inbound" {
+resource "azurerm_network_security_rule" "allow_https_Inbound" {
   name                        = "AllowHttpsInbound"
   priority                    = 100
-  direction                   = "inbound"
+  direction                   = "Inbound"
   access                      = "Allow"
   protocol                    = "Tcp"
   source_port_range           = "*"
@@ -77,10 +77,10 @@ resource "azurerm_network_security_rule" "allow_https_inbound" {
   network_security_group_name = azurerm_network_security_group.bastion.name
 }
 
-resource "azurerm_network_security_rule" "allow_gateway_manager_inbound" {
+resource "azurerm_network_security_rule" "allow_gateway_manager_Inbound" {
   name                        = "AllowGatewayManagerInbound"
   priority                    = 110
-  direction                   = "inbound"
+  direction                   = "Inbound"
   access                      = "Allow"
   protocol                    = "Tcp"
   source_port_range           = "*"
@@ -91,10 +91,10 @@ resource "azurerm_network_security_rule" "allow_gateway_manager_inbound" {
   network_security_group_name = azurerm_network_security_group.bastion.name
 }
 
-resource "azurerm_network_security_rule" "allow_sshrdp_outbound" {
+resource "azurerm_network_security_rule" "allow_sshrdp_Outbound" {
   name                        = "AllowSshRdpOutbound"
   priority                    = 100
-  direction                   = "outbound"
+  direction                   = "Outbound"
   access                      = "Allow"
   protocol                    = "Tcp"
   source_port_range           = "*"
@@ -105,10 +105,10 @@ resource "azurerm_network_security_rule" "allow_sshrdp_outbound" {
   network_security_group_name = azurerm_network_security_group.bastion.name
 }
 
-resource "azurerm_network_security_rule" "allow_azurecloud_outbound" {
+resource "azurerm_network_security_rule" "allow_azurecloud_Outbound" {
   name                        = "AllowAzureCloudOutbound"
   priority                    = 110
-  direction                   = "outbound"
+  direction                   = "Outbound"
   access                      = "Allow"
   protocol                    = "Tcp"
   source_port_range           = "*"
