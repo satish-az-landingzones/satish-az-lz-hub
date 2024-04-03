@@ -7,7 +7,7 @@ resource "azurerm_public_ip" "bastion" {
 }
 
 data "azurerm_subnet" "azure_bastion_subnet" {
-  depends_on           = [azurerm_network_security_group.hub]
+  depends_on           = [azurerm_virtual_network.hub]
   name                 = "AzureBastionSubnet"
   virtual_network_name = azurerm_virtual_network.hub.name
   resource_group_name  = azurerm_resource_group.hub.name
