@@ -2,7 +2,7 @@ data "azurerm_virtual_network" "spoke" {
   name                = "spoke-network"
   resource_group_name = "spoke-resources"
 }
- 
+
 resource "azurerm_virtual_network_peering" "hub_to_spoke" {
   name                      = "hub_to_spoke"
   resource_group_name       = azurerm_resource_group.hub.name
