@@ -20,3 +20,10 @@ terraform {
 provider "azurerm" {
   features {}
 }
+
+provider "azurerm" {
+  features {}
+  alias           = "spoke"
+  subscription_id = "caa318eb-1d1b-4015-b096-195726de1378"
+
+}
