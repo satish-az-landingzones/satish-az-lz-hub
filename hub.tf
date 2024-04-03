@@ -73,7 +73,7 @@ resource "azurerm_network_security_rule" "allow_https_inbound" {
   destination_port_range      = "443"
   source_address_prefix       = "Internet"
   destination_address_prefix  = "*"
-  resource_group_name         = azurerm_resource_group.bastion.name
+  resource_group_name         = azurerm_resource_group.hub.name
   network_security_group_name = azurerm_network_security_group.bastion.name
 }
 
@@ -87,7 +87,7 @@ resource "azurerm_network_security_rule" "allow_gateway_manager_inbound" {
   destination_port_range      = "443"
   source_address_prefix       = "GatewayManager"
   destination_address_prefix  = "*"
-  resource_group_name         = azurerm_resource_group.bastion.name
+  resource_group_name         = azurerm_resource_group.hub.name
   network_security_group_name = azurerm_network_security_group.bastion.name
 }
 
@@ -101,7 +101,7 @@ resource "azurerm_network_security_rule" "allow_sshrdp_outbound" {
   destination_port_ranges     = ["22", "3389"]
   source_address_prefix       = "*"
   destination_address_prefix  = "VirtualNetwork"
-  resource_group_name         = azurerm_resource_group.bastion.name
+  resource_group_name         = azurerm_resource_group.hub.name
   network_security_group_name = azurerm_network_security_group.bastion.name
 }
 
@@ -115,6 +115,6 @@ resource "azurerm_network_security_rule" "allow_azurecloud_outbound" {
   destination_port_range      = "443"
   source_address_prefix       = "*"
   destination_address_prefix  = "AzureCloud"
-  resource_group_name         = azurerm_resource_group.bastion.name
+  resource_group_name         = azurerm_resource_group.hub.name
   network_security_group_name = azurerm_network_security_group.bastion.name
 }
