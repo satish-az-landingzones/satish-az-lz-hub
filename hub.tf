@@ -23,7 +23,7 @@ resource "azurerm_network_security_group" "sg_hub_bastion" {
     source_port_range          = "*"
     destination_port_range     = "443"
     source_address_prefix      = "*"
-    destination_address_prefix = "AzureBastionSubnet"
+    destination_address_prefix = "AzureBastion"
   }
 }
 
