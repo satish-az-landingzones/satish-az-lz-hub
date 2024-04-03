@@ -27,6 +27,12 @@ resource "azurerm_virtual_network" "hub" {
     security_group = azurerm_network_security_group.hub.id
   }
 
+  subnet {
+    name           = "AzureBastionSubnet"
+    address_prefix = "10.0.3.0/26"
+    security_group = azurerm_network_security_group.hub.id
+  }
+
   tags = {
     environment = "Production"
   }
