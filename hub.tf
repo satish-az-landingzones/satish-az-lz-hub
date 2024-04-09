@@ -69,6 +69,7 @@ resource "azurerm_subnet_network_security_group_association" "subnet" {
   azurerm_network_security_rule.allow_azurecloud_Outbound]
 }
 
+
 resource "azurerm_network_security_rule" "allow_https_Inbound" {
   name                        = "AllowHttpsInbound"
   priority                    = 100
